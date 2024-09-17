@@ -1,0 +1,224 @@
+<html><head><base>
+   <title>Doctor's Dose: Smash the Vial</title>
+   <style> 
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #2ecc71;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-image: url('/content/e0499fc3235ad11b54ffb5b35eac6cf63e4d07aeead0a2594fbef280749c83f0i0');
+        background-size: cover;
+        background-repeat: repeat;       
+      }
+      .game-container {
+        background-color: transparent;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        color: #fff;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      }
+      .game-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .hole {
+        width: 100px;
+        height: 100px;
+        background-color: #8e44ad;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: inherit;
+        overflow: hidden;
+        transition: background-color 0.3s;
+      }
+      .hole:hover {
+        background-color: #9b59b6;
+      }
+      .monkey {
+        width: 80px;
+        height: 80px;
+        background-image: url('/content/7e9741c8718ecd96117167226f37b0f9c6aa85e50d7199e0d50b3799402df8c5i0');
+        background-size: cover;
+        display: none;
+      }
+      .whacked {
+        background-image: url('/content/2dbc6018dfda1d9dec11dcbff67134492c8a1b2dcecbcd6e9587a96f19f897a0i0');
+      }
+      .score, .time, .level {
+        color: #fff;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .start-btn {
+        display: block;
+        margin: 0 auto;
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: inherit;
+        transition: background-color 0.3s;
+      }
+      .start-btn:hover {
+        background-color: #c0392b;
+      }
+      .level-info {
+        color: #fff;
+        text-align: center;
+        margin-top: 10px;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background-color: #ecf0f1;
+        border-radius: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+      .progress {
+        width: 0%;
+        height: 100%;
+        background-color: #e74c3c;
+        transition: width 1s linear;
+      }
+    
+    </style>
+    </head>
+    <body>
+    <div class="game-container">
+      <h1>Doctor's Dose: Smash the Vial</h1>
+      <div class="score">Score: <span id="score">0</span></div>
+      <div class="time">Time: <span id="time">25</span>s</div>
+      <div class="level">Level: <span id="level">1</span></div>
+      <div class="progress-bar"><div class="progress" id="progress"></div></div>
+      <div class="game-board">
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+        <div class="hole"><div class="monkey"></div></div>
+      </div>
+      <button class="start-btn" id="startBtn">Start Game</button>
+      <div class="level-info" id="levelInfo"></div>
+    </div>
+    
+    <script>
+      const holes = document.querySelectorAll('.hole');
+      const monkeys = document.querySelectorAll('.monkey');
+      const scoreDisplay = document.getElementById('score');
+      const timeDisplay = document.getElementById('time');
+      const levelDisplay = document.getElementById('level');
+      const startBtn = document.getElementById('startBtn');
+      const levelInfo = document.getElementById('levelInfo');
+      const progressBar = document.getElementById('progress');
+    
+      let score = 0;
+      let timeLeft = 25;
+      let level = 1;
+      let gameInterval;
+      let monkeyInterval;
+      
+      const levels = [
+        { speed: 1000, description: "Lazy Doctor" },
+        { speed: 850, description: "Energetic Doctor" },
+        { speed: 700, description: "Caffeinated Doctor" },
+        { speed: 550, description: "Super-charged Doctor" },
+        { speed: 400, description: "Hyper-speed Doctor" }
+      ];
+    
+      function randomTime(min, max) {
+        return Math.round(Math.random() * (max - min) + min);
+      }
+    
+      function randomHole(holes) {
+        const idx = Math.floor(Math.random() * holes.length);
+        const hole = holes[idx];
+        return hole;
+      }
+    
+      function peep() {
+        const time = randomTime(levels[level - 1].speed * 0.5, levels[level - 1].speed);
+        const hole = randomHole(holes);
+        hole.querySelector('.monkey').style.display = 'block';
+        setTimeout(() => {
+          hole.querySelector('.monkey').style.display = 'none';
+          if (timeLeft > 0) peep();
+        }, time);
+      }
+    
+      function startGame() {
+        score = 0;
+        level = 1;
+        startLevel();
+      }
+    
+      function startLevel() {
+        timeLeft = 25;
+        scoreDisplay.textContent = score;
+        timeDisplay.textContent = timeLeft;
+        levelDisplay.textContent = level;
+        updateLevelInfo();
+        startBtn.disabled = true;
+        progressBar.style.width = '0%';
+        
+        gameInterval = setInterval(() => {
+          timeLeft--;
+          timeDisplay.textContent = timeLeft;
+          progressBar.style.width = `${(25 - timeLeft) / 25 * 100}%`;
+          
+          if (timeLeft === 0) {
+            clearInterval(gameInterval);
+            clearTimeout(monkeyInterval);
+            monkeys.forEach(monkey => monkey.style.display = 'none');
+            
+            if (level < 5) {
+              level++;
+              alert(`Level ${level} completed! Get ready for ${levels[level - 1].description}!`);
+              startLevel();
+            } else {
+              startBtn.disabled = false;
+              alert(`Game Over! Your final score: ${score}`);
+            }
+          }
+        }, 1000);
+        
+        peep();
+      }
+    
+      function whack(e) {
+        if (!e.isTrusted) return;
+        if (e.target.classList.contains('monkey')) {
+          score++;
+          e.target.style.display = 'none';
+          e.target.classList.add('whacked');
+          scoreDisplay.textContent = score;
+          setTimeout(() => e.target.classList.remove('whacked'), 300);
+        }
+      }
+    
+      function updateLevelInfo() {
+        levelInfo.textContent = `Current level: ${levels[level - 1].description}`;
+      }
+    
+      monkeys.forEach(monkey => monkey.addEventListener('click', whack));
+      startBtn.addEventListener('click', startGame);
+    </script>
+    </body></html>
